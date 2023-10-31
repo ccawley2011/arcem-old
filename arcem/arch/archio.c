@@ -268,7 +268,7 @@ ParseIOCAddr(ARMword address, ARMword *bank, ARMword *speed, ARMword *offset)
 
   *offset = address & 0xffff;
 
-  /*fprintf(stderr, "ParseIOCAddr: address=0x%x bank=%u speed=%u offset=0x%x\n",
+  /*dbug_ioc("ParseIOCAddr: address=0x%x bank=%u speed=%u offset=0x%x\n",
           address, *bank, *speed, *offset); */
 } /* ParseIOCAddr */
 
@@ -334,7 +334,7 @@ GetWord_IOCReg(ARMul_State *state, int Register)
 
     case 0xe: /* FIRQ mask */
       Result = ioc.FIRQMask;
-      fprintf(stderr,"IOCRead: FIRQMask=0x%x\n", Result);
+      dbug_ioc("IOCRead: FIRQMask=0x%x\n", Result);
       break;
 
     case 0x10: /* T0 count low */
@@ -359,7 +359,7 @@ GetWord_IOCReg(ARMul_State *state, int Register)
 
     default:
       Result = 0;
-      fprintf(stderr, "IOCRead: Read of unknown IOC register %d\n", Register);
+      warn_ioc("IOCRead: Read of unknown IOC register %d\n", Register);
       break;
   }
 
@@ -468,8 +468,8 @@ PutVal_IOCReg(ARMul_State *state, int Register, ARMword data, bool bNw)
       break;
 
     default:
-      fprintf(stderr,"IOC Write: Bad IOC register write reg=%d data=0x%x\n",
-              Register, data);
+      warn_ioc("IOC Write: Bad IOC register write reg=%d data=0x%x\n",
+               Register, data);
       break;
   } /* Register */
 
@@ -543,8 +543,8 @@ GetWord_IO(ARMul_State *state, ARMword address)
   } else {
     /* IO-address space unused on Arc hardware */
     /*EnableTrace();*/
-    fprintf(stderr, "Read from non-IOC IO space (addr=0x%08x pc=0x%08x\n",
-            address, state->pc);
+    warn_ioc("Read from non-IOC IO space (addr=0x%08x pc=0x%08x\n",
+             address, state->pc);
 
     return 0;
   }
@@ -615,7 +615,7 @@ PutValIO(ARMul_State *state, ARMword address, ARMword data, bool byteNotword)
         if(speed == 1)
         {
           /* Medium speed, assume HDC */
-          /*fprintf(stderr,"HDC write: address=0x%x speed=%u\n", address, speed); */
+          /*dbug_ioc("HDC write: address=0x%x speed=%u\n", address, speed); */
           HDC_Write(state, offset, data);
         }
         else if(speed == 2)
@@ -663,8 +663,8 @@ PutValIO(ARMul_State *state, ARMword address, ARMword data, bool byteNotword)
     } /* Bank switch */
   } else {
     /* IO-address space unused on Arc hardware */
-    fprintf(stderr, "Write to non-IOC IO space (addr=0x%x data=0x%08x\n",
-              address, data);
+    warn_ioc("Write to non-IOC IO space (addr=0x%x data=0x%08x\n",
+             address, data);
   }
 } /* PutValIO */
 
@@ -677,7 +677,7 @@ int
 IOC_ReadKbdTx(ARMul_State *state)
 {
   if ((ioc.IRQStatus & IRQB_STX) == 0) {
-    /*fprintf(stderr, "ArmArc_ReadKbdTx: Value=0x%x\n", ioc.SerialTxData); */
+    /*dbug_ioc("ArmArc_ReadKbdTx: Value=0x%x\n", ioc.SerialTxData); */
     /* There is a byte present (Kart TX not empty) */
     /* Mark as empty and then return the value */
     ioc.IRQStatus |= IRQB_STX;
@@ -692,7 +692,7 @@ IOC_ReadKbdTx(ARMul_State *state)
 int
 IOC_WriteKbdRx(ARMul_State *state, uint8_t value)
 {
-  /*fprintf(stderr, "ArmArc_WriteKbdRx: value=0x%x\n", value); */
+  /*dbug_ioc("ArmArc_WriteKbdRx: value=0x%x\n", value); */
   if (ioc.IRQStatus & IRQB_SRX) {
     /* Still full */
     return -1;
